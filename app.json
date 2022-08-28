@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "Fx-Pad",
+    "slug": "Fx-Pad",
+    "version": "7.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
+      },
+      "package": "ke.co.pie",
+      "versionCode": 8,
+      "permissions" : [],
+      "config": {
+        "googleMobileAdsAppId":"ca-app-pub-4266400232196448~9497282072"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
