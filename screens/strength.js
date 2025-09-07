@@ -1,184 +1,161 @@
-import {View,Text, Dimensions,ScrollView} from "react-native"
-import React, { useEffect, useState } from "react"
+import { View, Text, Dimensions, ScrollView, StyleSheet } from "react-native";
+import React, { useEffect, useState } from "react";
 import { BarChart } from "react-native-chart-kit";
-import axios from 'axios';
-const baseUrlH1 = 'https://fxpesa.pie.co.ke/strength/changeH1.php';
-const baseUrlH4 = 'https://fxpesa.pie.co.ke/strength/changeH4.php';
-const baseUrlD1 = 'https://fxpesa.pie.co.ke/strength/changeD1.php';
-const baseUrlW1 = 'https://fxpesa.pie.co.ke/strength/changeW1.php';
-export default function Strength({navigation}){
-    const[Hour1, setH1]=useState([]);
-    const[Hour4, setH4]=useState([]);
-    const[Day1,setD1]=useState([]);
-    const[Week1,setW1]=useState([]);
-    const[label,setLabel]=useState([]);
+import axios from "axios";
 
-    function apiload(){
-      /*1 HOUR TIME FRAME*/
-      axios({
-        method: 'get',
-        url: `${baseUrlH1}`,
-      }).then((response) => {
-        setH1(response.data);
-      });
-      
-    /*4 HOUR TIME FRAME */
-    axios({
-        method: 'get',
-        url: `${baseUrlH4}`,
-      }).then((response) => {
-        setH4(response.data);
-      });
+const baseUrlH1 = "https://fxpesa.pie.co.ke/strength/changeH1.php";
+const baseUrlH4 = "https://fxpesa.pie.co.ke/strength/changeH4.php";
+const baseUrlD1 = "https://fxpesa.pie.co.ke/strength/changeD1.php";
+const baseUrlW1 = "https://fxpesa.pie.co.ke/strength/changeW1.php";
 
-          /*4 HOUR TIME FRAME */
-    axios({
-        method: 'get',
-        url: `${baseUrlD1}`,
-      }).then((response) => {
-        setD1(response.data);
-      });
+export default function Strength({ navigation }) {
+  const [Hour1, setH1] = useState([]);
+  const [Hour4, setH4] = useState([]);
+  const [Day1, setD1] = useState([]);
+  const [Week1, setW1] = useState([]);
 
-      /*WEEKLY TIMEFRAME*/  
-      axios({
-        method: 'get',
-        url: `${baseUrlW1}`,
-      }).then((response) => {
-        setW1(response.data);
-      });
-    }
+  function apiload() {
+    axios.get(baseUrlH1).then((res) => setH1(res.data));
+    axios.get(baseUrlH4).then((res) => setH4(res.data));
+    axios.get(baseUrlD1).then((res) => setD1(res.data));
+    axios.get(baseUrlW1).then((res) => setW1(res.data));
+  }
 
-   useEffect(()=>{
-        apiload();
-        console.log("wow");
-   }, [])
+  useEffect(() => {
+    apiload();
+    const interval = setInterval(() => apiload(), 10000);
+    return () => clearInterval(interval);
+  }, []);
 
-    useEffect(()=>{    
-        setInterval(function(){                
-          apiload();
-          console.log("hello frank");
-       }, 10000);//wait 10 seconds
-   
-    },[])
+  const labels = ["USD", "EUR", "GBP", "NZD", "CAD", "AUD", "CHF", "JPY"];
 
-    const H1 = {
-        labels: ["USD", "EUR", "GBP", "NZD", "CAD", "AUD","CHF","JPY"],
-        datasets: [
-          {
-            data: Hour1
-          }  
-        ]
-      }
+  const makeData = (values) => ({
+    labels,
+    datasets: [{ data: values }],
+  });
 
-      const H4 = {
-        labels: ["USD", "EUR", "GBP", "NZD", "CAD", "AUD","CHF","JPY"],
-        datasets: [
-          {
-            data: Hour4
-          }  
-        ]
-      }
+  const chartConfigs = {
+    H1: {
+      backgroundGradientFrom: "#36D1DC",
+      backgroundGradientTo: "#5B86E5",
+    },
+    H4: {
+      backgroundGradientFrom: "#FF512F",
+      backgroundGradientTo: "#DD2476",
+    },
+    D1: {
+      backgroundGradientFrom: "#11998E",
+      backgroundGradientTo: "#38EF7D",
+    },
+    W1: {
+      backgroundGradientFrom: "#654ea3",
+      backgroundGradientTo: "#eaafc8",
+    },
+  };
 
-      const D1 = {
-        labels: ["USD", "EUR", "GBP", "NZD", "CAD", "AUD","CHF","JPY"],
-        datasets: [
-          {
-            data: Day1
-          }  
-        ]
-      }
+  const commonConfig = {
+    decimalPlaces: 2,
+    color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+    labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+    style: { borderRadius: 16 },
+  };
 
-      const W1 = {
-        labels: ["USD", "EUR", "GBP", "NZD", "CAD", "AUD","CHF","JPY"],
-        datasets: [
-          {
-            data: Week1
-          }  
-        ]
-      }
+  return (
+    <ScrollView style={styles.container}>
+      <Text style={styles.header}>📊 Currency Strength Analysis</Text>
 
-    const config = {
-        backgroundColor: "#e26a00",
-        backgroundGradientFrom: "#fb8c00",
-        backgroundGradientTo: "#ffa726",
-        decimalPlaces: 2, // optional, defaults to 2dp
-        color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-        labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-        style: {
-          borderRadius: 16
-        },
-        propsForDots: {
-          r: "6",
-          strokeWidth: "2",
-          stroke: "#ffa726"
-        }
-      }
+      {/* 1H */}
+      <View style={styles.card}>
+        <Text style={styles.title}>⏱ 1 Hour</Text>
+        <BarChart
+          fromZero
+          data={makeData(Hour1)}
+          width={Dimensions.get("window").width - 32}
+          height={220}
+          yAxisSuffix="%"
+          chartConfig={{ ...commonConfig, ...chartConfigs.H1 }}
+          style={styles.chart}
+        />
+      </View>
 
-      const cstyle={
-        marginVertical: 8,
-        borderRadius: 16
-      }
+      {/* 4H */}
+      <View style={styles.card}>
+        <Text style={styles.title}>⏳ 4 Hours</Text>
+        <BarChart
+          fromZero
+          data={makeData(Hour4)}
+          width={Dimensions.get("window").width - 32}
+          height={220}
+          yAxisSuffix="%"
+          chartConfig={{ ...commonConfig, ...chartConfigs.H4 }}
+          style={styles.chart}
+        />
+      </View>
 
-    return(
-        <ScrollView>
-            <View>
-            <Text>1 HOUR</Text>
-                    <BarChart
-                        fromZero={false}
-                        data={H1}
-                        width={Dimensions.get("window").width}
-                        height={220}
-                        yAxisSuffix="%"
-                        yAxisInterval={1}
-                        chartConfig={config}
-                        bezier
-                        style={cstyle}
-                    />
-            </View>
+      {/* Daily */}
+      <View style={styles.card}>
+        <Text style={styles.title}>📅 Daily</Text>
+        <BarChart
+          fromZero
+          data={makeData(Day1)}
+          width={Dimensions.get("window").width - 32}
+          height={220}
+          yAxisSuffix="%"
+          chartConfig={{ ...commonConfig, ...chartConfigs.D1 }}
+          style={styles.chart}
+        />
+      </View>
 
-            <View>
-            <Text>4 HOUR</Text>
-                    <BarChart
-                        fromZero={false}
-                        data={H4}
-                        width={Dimensions.get("window").width}
-                        height={220}
-                        yAxisSuffix="%"
-                        yAxisInterval={1}
-                        chartConfig={config}
-                        bezier
-                        style={cstyle}
-                    />
-            </View>
-
-            <View>
-            <Text>DAILY</Text>
-                    <BarChart
-                        fromZero={false}
-                        data={D1}
-                        width={Dimensions.get("window").width}
-                        height={220}
-                        yAxisSuffix="%"
-                        yAxisInterval={1}
-                        chartConfig={config}  
-                        bezier
-                        style={cstyle}
-                    />
-            </View>
-
-            <View>
-            <Text>WEEKLY</Text>
-                    <BarChart
-                        fromZero={false}
-                        data={W1}
-                        width={Dimensions.get("window").width}
-                        height={220}
-                        yAxisSuffix="%"
-                        yAxisInterval={1}
-                        chartConfig={config}  
-                        bezier 
-                        style={cstyle}
-                    />
-            </View>
-      </ScrollView>
-        )
+      {/* Weekly */}
+      <View style={styles.card}>
+        <Text style={styles.title}>📈 Weekly</Text>
+        <BarChart
+          fromZero
+          data={makeData(Week1)}
+          width={Dimensions.get("window").width - 32}
+          height={220}
+          yAxisSuffix="%"
+          chartConfig={{ ...commonConfig, ...chartConfigs.W1 }}
+          style={styles.chart}
+        />
+      </View>
+    </ScrollView>
+  );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#f7f9fc",
+  },
+  header: {
+    fontSize: 22,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginVertical: 20,
+    color: "#333",
+  },
+  card: {
+    backgroundColor: "#fff",
+    marginHorizontal: 16,
+    marginBottom: 20,
+    borderRadius: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 10,
+    textAlign: "center",
+    color: "#444",
+  },
+  chart: {
+    borderRadius: 16,
+  },
+});
